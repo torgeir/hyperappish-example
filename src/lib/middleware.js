@@ -1,8 +1,6 @@
 import Rx from "rxjs/Rx";
 
-import { middleware } from "../actions";
-
-export const { callAction } = middleware;
+const doto = (o, fn) => (fn(o), o);
 
 export const promise = (action, next) =>
   typeof action.result.then == "function"
@@ -20,9 +18,8 @@ export const observable = (...epics) => {
 };
 
 export const logActions = (action, next) => (
-  console.log("action", JSON.stringify(action)), next(action)
+  console.log("action", JSON.stringify(action.type, null, 2)), next(action)
 );
 
-export const logState = (action, next) => (
-  next(action), _ => console.log("state", JSON.stringify(state))
-);
+export const logState = getState => (action, next) =>
+  doto(next(action), () => console.log("state", JSON.stringify(getState())));

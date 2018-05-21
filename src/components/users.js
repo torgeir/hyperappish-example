@@ -1,36 +1,75 @@
 import React from "react";
 
 import { actions } from "../actions";
+import { Row, Item } from "./rows";
 
-export const User = ({ user, onClick = v => v }) => (
-  <span onClick={onClick} style={{ cursor: "pointer" }}>
-    {user.name} ({user.id})
-  </span>
-);
+const Link = Item.withComponent("a");
 
-export const Users = ({ list, fetching }) => {
-  if (!list.length && !fetching) {
-    actions.users.list();
-    return <span>Loading..</span>;
+const User = Link.extend`
+  cursor: pointer;
+  text-align: left;
+  &:hover {
+    background-color: #fb0;
+    color: white;
   }
+`;
 
-  return (
-    <div>
-      <h2>Users</h2>
-      {list.map(user => (
-        <div key={user.id}>
-          <User user={user} onClick={() => actions.selection.select(user)} />
-        </div>
-      ))}
-    </div>
-  );
+const SelectedUser = User.extend`
+  background-color: orange;
+  color: white;
+`;
+
+const Message = Item.extend`
+  text-align: left;
+`;
+
+const Error = Message.extend`
+  background-color: red;
+  color: white;
+`;
+
+export const ensureUsers = fn => ({ users }) => {
+  if (users.error) {
+    return <Users.Error />;
+  }
+  if (users.fetching) {
+    return <Users.Loading />;
+  }
+  if (users.list.length == 0 && !users.fetching) {
+    actions.users.list();
+    return <Users.Loading />;
+  }
+  return fn({ users });
 };
 
-export const SelectedUser = ({ user }) => (
-  <div>
-    <h2>Selected user</h2>
-    <span>
-      {user.name} <button onClick={() => actions.selection.remove()}>x</button>
-    </span>
-  </div>
+export const Users = ({ list, error, selected }) => {
+  if (error) {
+    return <Users.Error />;
+  }
+
+  return list.map(user => (
+    <Row key={user.id}>
+      {user == selected ? (
+        <SelectedUser onClick={() => actions.location.clearUser()}>
+          {user.name}{" "}
+        </SelectedUser>
+      ) : (
+        <User onClick={() => actions.location.selectUser(user)}>
+          {user.name}
+        </User>
+      )}
+    </Row>
+  ));
+};
+
+Users.Loading = () => (
+  <Row>
+    <Message>Loading..</Message>
+  </Row>
+);
+
+Users.Error = () => (
+  <Row>
+    <Error>An error occurred.</Error>
+  </Row>
 );

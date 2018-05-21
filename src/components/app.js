@@ -1,15 +1,25 @@
 import React from "react";
+import styled from "styled-components";
 
-import { timetravel } from "../actions";
+import { actions, timetravel } from "../actions";
 
-import { Users, User, SelectedUser } from "./users";
-import { Incrementer } from "./incrementer";
+import { Row, Item } from "./rows";
 
-export const App = ({ selection, users, incrementer }) => (
-  <div>
-    <timetravel.ActionList />
-    {selection.user && <SelectedUser user={selection.user} />}
-    <Users {...users} />
-    <Incrementer {...incrementer} />
-  </div>
+const Layout = styled.div`
+  width: 100%;
+  height: 100%;
+`;
+
+export const App = ({ children }) => (
+  <Layout>
+    <timetravel.View>
+      <Row>
+        <Item onClick={() => actions.location.go("/users", {})}>Users</Item>
+        <Item onClick={() => actions.location.go("/incrementer", {})}>
+          Incrementer
+        </Item>
+      </Row>
+      {children}
+    </timetravel.View>
+  </Layout>
 );

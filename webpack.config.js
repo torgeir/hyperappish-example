@@ -1,17 +1,18 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const isDev = process.env.NODE_ENV !== 'production'
+const isDev = process.env.NODE_ENV !== "production";
 
 module.exports = {
+  output: {
+    publicPath: "/"
+  },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader"
-        }
+        use: ["babel-loader"]
       },
       {
         test: /\.html$/,
@@ -24,7 +25,10 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [isDev ? "style-loader" : MiniCssExtractPlugin.loader, "css-loader"]
+        use: [
+          isDev ? "style-loader" : MiniCssExtractPlugin.loader,
+          "css-loader"
+        ]
       }
     ]
   },
@@ -37,5 +41,8 @@ module.exports = {
       filename: "[name].css",
       chunkFilename: "[id].css"
     })
-  ]
+  ],
+  devServer: {
+    historyApiFallback: true
+  }
 };
