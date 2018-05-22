@@ -7,7 +7,7 @@ const Action = ({
   disabled,
   selected,
   onClick = v => v,
-  action: { type, args = [] },
+  action: { id, type, args = [] },
   state
 }) => (
   <div
@@ -100,23 +100,27 @@ export class ActionList extends React.Component {
               <button onClick={() => debugActions.clearActions()}>Clear</button>
             ) : null}
             {current < numActions ? (
-              <button onClick={() => debugActions.moveToState(numActions)}>
+              <button
+                onClick={() => debugActions.moveToState(actions.length - 1)}>
                 Resume
               </button>
             ) : null}
           </div>
           <ul style={{ listStyleType: "none", margin: 0, padding: 0 }}>
-            {actions.sort((a, b) => a.endTime > b.endTime).map((action, i) => (
-              <li key={i} style={{ margin: 0, padding: 0 }}>
-                <Action
-                  action={action}
-                  state={states[action.id]}
-                  selected={i == current}
-                  disabled={i > current}
-                  onClick={() => debugActions.moveToState(i)}
-                />
-              </li>
-            ))}
+            {actions
+              .slice()
+              .sort((a, b) => a.endTime - b.endTime)
+              .map((action, i) => (
+                <li key={action.id} style={{ margin: 0, padding: 0 }}>
+                  <Action
+                    action={action}
+                    state={states[action.id]}
+                    selected={i == current}
+                    disabled={i > current}
+                    onClick={() => debugActions.moveToState(i)}
+                  />
+                </li>
+              ))}
           </ul>
         </div>
       </div>

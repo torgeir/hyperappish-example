@@ -13,8 +13,8 @@ const copy = s => {
 const initState = (state, extra = {}) => ({
   enabled: true,
   current: 0,
-  states: { init: copy(state) },
-  actions: [{ id: "init", type: "init", endTime: new Date() }],
+  states: { "-1": copy(state) },
+  actions: [{ id: -1, type: "init", endTime: new Date() }],
   ...extra
 });
 
@@ -24,10 +24,14 @@ export const debug = (getTrackingState, setTrackingState) => {
       toggle: state => !state
     },
     clearActions: ({ enabled }) => initState(getTrackingState(), { enabled }),
-    addAction: (action, state) => ({
-      ...state,
-      actions: [...state.actions, action]
-    }),
+    addAction: (action, state) => {
+      const actions = [...state.actions, action];
+      return {
+        ...state,
+        actions,
+        current: actions.length - 1
+      };
+    },
     addState: (action, resultState, state) => {
       state.actions.find(a => a.id == action.id).endTime = new Date();
       return {
@@ -35,12 +39,17 @@ export const debug = (getTrackingState, setTrackingState) => {
         states: {
           ...state.states,
           [action.id]: resultState
-        },
-        current: Object.keys(state.states).length
+        }
       };
     },
     moveToState: (n, state) => {
-      setTrackingState(copy(state.states[state.actions[n].id]));
+      setTrackingState(
+        copy(
+          state.states[
+            state.actions.slice().sort((a, b) => a.endTime - b.endTime)[n].id
+          ]
+        )
+      );
       return { ...state, current: n };
     }
   });
@@ -51,10 +60,17 @@ export const debug = (getTrackingState, setTrackingState) => {
     }
   });
 
+  const maxBy = ([first, ...rest], fn) =>
+    rest.reduce((acc, el) => (fn(el) > fn(acc) ? el : acc), first);
+
+  const lastAction = actions =>
+    actions.slice().sort((a, b) => a.endTime - b.endTime)[actions.length - 1];
+
   function timetravel(mws) {
     return [
       (action, next) => {
-        if (getState().current < Object.keys(getState().states).length - 1) {
+        const s = getState();
+        if (s.current < s.actions.indexOf(lastAction(s.actions))) {
           return console.warn(
             "Viewing an historic state, skipping new actions until you move to the last one"
           );
