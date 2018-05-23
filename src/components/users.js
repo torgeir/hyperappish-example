@@ -51,7 +51,7 @@ export const Users = ({ list, error, selected }) => {
     <Row key={user.id}>
       {user == selected ? (
         <SelectedUser onClick={() => actions.location.clearUser()}>
-          {user.name}{" "}
+          {user.name}
         </SelectedUser>
       ) : (
         <User onClick={() => actions.location.selectUser(user)}>
